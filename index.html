@@ -1,0 +1,324 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가위바위보 룰렛</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 25px 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Malgun Gothic", sans-serif;
+    background: linear-gradient(135deg, #fff0d9, #f5d8ff);
+    text-align: center;
+    color: #333;
+}
+
+.container {
+    width: 100%;
+    max-width: 650px;
+    background: white;
+    padding: 30px 20px;
+    border-radius: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+h1 {
+    font-size: clamp(30px, 6vw, 43px);
+    color: #7845b8;
+    margin: 0 0 15px;
+}
+
+.subtitle {
+    font-size: 21px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.result {
+    min-height: 115px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: clamp(40px, 9vw, 65px);
+    font-weight: bold;
+    color: #e65b28;
+    margin: 10px 0;
+}
+
+.wheel-area {
+    position: relative;
+    width: min(82vw, 420px);
+    aspect-ratio: 1;
+    margin: 15px auto 30px;
+}
+
+.pointer {
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    width: 0;
+    height: 0;
+    border-left: 22px solid transparent;
+    border-right: 22px solid transparent;
+    border-top: 45px solid #333;
+    filter: drop-shadow(0 3px 2px rgba(0,0,0,0.25));
+}
+
+.wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: relative;
+    border: 9px solid white;
+    outline: 5px solid #7651a8;
+    background: conic-gradient(
+        from -60deg,
+        #ff7979 0deg 120deg,
+        #ffd65c 120deg 240deg,
+        #70c9ed 240deg 360deg
+    );
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    transition: transform 5s cubic-bezier(0.12, 0.7, 0.12, 1);
+}
+
+.wheel-label {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    font-size: clamp(27px, 6vw, 42px);
+    font-weight: bold;
+    color: #333;
+    pointer-events: none;
+}
+
+.label {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 100px;
+    transform-origin: center;
+}
+
+.label span {
+    display: block;
+    width: 100%;
+    text-align: center;
+    transform: translateY(-145px);
+}
+
+.label:nth-child(1) {
+    transform: translate(-50%, -50%) rotate(0deg);
+}
+
+.label:nth-child(2) {
+    transform: translate(-50%, -50%) rotate(120deg);
+}
+
+.label:nth-child(3) {
+    transform: translate(-50%, -50%) rotate(240deg);
+}
+
+.center-circle {
+    position: absolute;
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background: white;
+    border: 5px solid #7651a8;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+button {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 18px auto;
+    padding: 22px 15px;
+    border: none;
+    border-radius: 18px;
+    font-size: 29px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+#spinButton {
+    background: #8e54c8;
+    color: white;
+    box-shadow: 0 5px 0 #67399b;
+}
+
+#againButton {
+    display: none;
+    background: #20a77a;
+    color: white;
+    box-shadow: 0 5px 0 #147657;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.message {
+    font-size: 20px;
+    color: #777;
+    margin-top: 20px;
+}
+
+@media(max-width: 480px) {
+    .container {
+        padding: 25px 12px;
+    }
+
+    .label span {
+        transform: translateY(-31vw);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🎯 가위바위보 룰렛</h1>
+
+    <div class="subtitle">
+        룰렛을 돌려 행운의 결과를 확인하세요!
+    </div>
+
+    <div class="result" id="result">
+        준비!
+    </div>
+
+    <div class="wheel-area">
+
+        <div class="pointer"></div>
+
+        <div class="wheel" id="wheel">
+
+            <div class="wheel-label">
+
+                <div class="label">
+                    <span>가위 ✌️</span>
+                </div>
+
+                <div class="label">
+                    <span>바위 ✊</span>
+                </div>
+
+                <div class="label">
+                    <span>보 ✋</span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="center-circle"></div>
+
+    </div>
+
+    <button id="spinButton" onclick="spinWheel()">
+        🎡 룰렛 돌리기
+    </button>
+
+    <button id="againButton" onclick="spinWheel()">
+        🔄 다시 돌리기
+    </button>
+
+    <div class="message" id="message">
+        버튼을 눌러 시작하세요!
+    </div>
+
+</div>
+
+<script>
+const wheel = document.getElementById("wheel");
+const result = document.getElementById("result");
+const message = document.getElementById("message");
+const spinButton = document.getElementById("spinButton");
+const againButton = document.getElementById("againButton");
+
+// 포인터가 가리키는 각 칸의 중심 각도
+// 가위: 60도, 바위: 180도, 보: 300도
+const choices = [
+    { name: "가위 ✌️", angle: 60 },
+    { name: "바위 ✊", angle: 180 },
+    { name: "보 ✋", angle: 300 }
+];
+
+let currentRotation = 0;
+let isSpinning = false;
+
+function spinWheel() {
+
+    if (isSpinning) return;
+
+    isSpinning = true;
+
+    spinButton.disabled = true;
+    againButton.style.display = "none";
+
+    result.textContent = "빙글빙글!";
+    message.textContent = "행운의 결과를 기다려 주세요...";
+
+    // 무작위 결과 선택
+    const selectedIndex = Math.floor(Math.random() * 3);
+    const selected = choices[selectedIndex];
+
+    // 최소 5바퀴 이상 회전
+    const extraSpins = 5 + Math.floor(Math.random() * 3);
+
+    // 최종적으로 선택한 칸의 중심이 포인터(위쪽)를 향하도록 계산
+    const targetRotation =
+        extraSpins * 360 + (360 - selected.angle);
+
+    currentRotation += targetRotation;
+
+    // 원판 회전
+    wheel.style.transform =
+        `rotate(${currentRotation}deg)`;
+
+    // 회전이 끝난 뒤 결과 표시
+    setTimeout(() => {
+
+        result.textContent = selected.name;
+        message.textContent =
+            "🎉 룰렛 결과가 나왔습니다!";
+
+        spinButton.disabled = false;
+        againButton.style.display = "block";
+
+        isSpinning = false;
+
+    }, 5100);
+}
+</script>
+
+</body>
+</html>
